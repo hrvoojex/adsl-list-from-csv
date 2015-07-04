@@ -43,7 +43,8 @@ def uis_non_empyt(prompt):
 def user_input_int(prompt):
     """
     Takes an input as a integer value from a user.
-    If it's not integer or it's negative value it throws an error.
+    If it's not integer or it's negative 
+    value it throws an error.
     """
     while True:
         try:
@@ -90,7 +91,8 @@ def add_csv(file_name):
 
 def choice(prompt):
     """
-    Takes an input from a user which information does he want from a file.
+    Takes an input from a user which information 
+    does he want from a file.
     The user has a choice 1, 2, or 3.
     ESC is for exit the program.
     """
@@ -185,33 +187,30 @@ def lines(csv_file,encoding_code, user_choice):
             if word in mod_list:
                 if user_choice == 1:
                     dictionary[line[2]] = (
-                        dictionary.get(line[2], 0) + int(line[5])
-                        )
+                        dictionary.get(line[2], 0) + int(line[5]))
                 elif user_choice == 2:
                     temp = line[6].split(":")
                     converted = float(temp[0]) + float(temp[1]) / 60.0
                     new_key = line[1] + ' ' + line[2]
                     dictionary[new_key] = (
-                        dictionary.get(new_key, 0) + converted
-                        )
+                        dictionary.get(new_key, 0) + converted)
                 else:
                     new_key = line[1] + ' ' + line[2]
                     dictionary[new_key] = (
                         dictionary.get(new_key, 0) +
-                        float(line[9].replace(',', '.')) #eg. 15,2 to 15.2
-                        )
+                        float(line[9].replace(',', '.'))) #eg. 15,2 to 15.2
 
     return dictionary
 
 def print_from_top(dicton):
     """
-    Takes dictionary dicton as input
+    Takes a dictionary dicton as input
     and number from_top, which tells us how
     many to print from top of the list.
     """
     from_top = ''
     while True:
-        from_top = raw_input("Enter list length: ")
+        from_top = raw_input("\nEnter list length: ")
         if from_top == '':
             from_top = 0
     
@@ -233,15 +232,20 @@ def print_from_top(dicton):
         tmp.sort(reverse=True) # sorts list by value val
         if from_top != 0:
             tmp = tmp[:from_top] # prints only 'from_top' keys, lines
-
+    #print compare
     for key, val in tmp:
         count += 1
+        try:
+            name = compare.get(val, 0) # name is from addressbook, dict compare
+        except:
+            name = "-"
+
         if user_choice == 1:
-            print("%d. %.d GB %s" % (count, key, val))
+            print("%d. %.d GB %s %s" % (count, key, val, name))
         elif user_choice == 2:
-            print("%d. %.2f min. %s" % (count, key, val))
+            print("%d. %.2f min. %s %s" % (count, key, val, name))
         else:
-            print("%d. %.2f HRK %s" % (count, key, val))
+            print("%d. %.2f HRK %s %s" % (count, key, val, name))
 
 def nice_print(num):
     """
@@ -252,6 +256,62 @@ def nice_print(num):
         print("%.2f" % num)
     else:
         print("%d" % num)
+
+def import_addressbook():
+    """
+    Ask a user to import a name for
+    an addressbook file from which we are
+    going to identify cost carrier
+    """
+    while True:
+        addressbook_que = user_input_str(
+            'Do you want to identify cost carriers?[Y/n]: ')
+
+        if addressbook_que.lower() == 'y' or addressbook_que == '':
+            addressbook = user_input_str(
+                '\nEnter an addressbook file name '
+                '(Enter for addressbook.csv): ')
+            if addressbook == '':
+                addressbook = 'addressbook.csv'
+        elif addressbook_que.lower() == 'n': 
+            print_from_top(result_dict)
+            sys.exit("Quitting...")
+        else:
+            print('Wong input. Try again.')
+            continue
+
+        break
+
+    return addressbook
+
+def compare(dicton, csv_addressbook):
+    """
+    Takes a dictionary and addressbook and compares
+    identificator from dictionary to a name from addressbook
+    """
+    dictionary = dict()
+    li = list()
+    try:
+        data = open(csv_addressbook)
+    except:
+        print("No such file %s" % csv_addressbook)
+        sys.exit("Quitting...")
+    #print dicton
+    for key, val in dicton.items():
+        #print key
+        li.append(key)
+
+    for line in data:
+        line = line.rstrip()
+        line = line.decode(encoding_code)
+        line = line.split(";")
+        for word in line:
+            if word in li:
+                dictionary[word] = line[0] + ' ' + line[1]
+
+    #print dictionary
+    return dictionary
+
 
 # default list of keywords if user choice is maxadsl
 maxadsl_default = [u'MAXadsl promet']
@@ -277,7 +337,7 @@ choice_default = [
     "2 - CONVERSATION TIME",
     "3 - AMOUNT",
     ]
-    
+
 # Here starts script execution
 tht_file = uis_non_empyt('Enter a T-Com csv file name: ')
 tht_file_csv = add_csv(tht_file) # adds .csv if not given from a user
@@ -289,10 +349,20 @@ for s in choice_default:
 user_choice = choice("\nSelect an option 1, 2 or 3 (ESC for exit): ")
 print("You chose: "), choice_default[user_choice-1]
 encoding_code = encoding_code(
-    "\nEnter your file encoding (ENTER for windows-1250): "
-    )
+    "\nEnter your file encoding (ENTER for windows-1250): ")
 mod_list = modified_list(user_choice)
 print_list(mod_list) # Prints a keyword list, each iteam in a new row
 print '' # prints empty line
 result_dict = lines(tht_file_csv, encoding_code, user_choice)
+
+# calls function import_addressbook() 
+# input addressbook file for identifying cost carrier
+imp_addressbook = import_addressbook()
+
+# dictionary of an identifier and a name of cost carrier
+# if he is in an addressbook
+compare = compare(result_dict, imp_addressbook)
+
+#print final result
 print_from_top(result_dict)
+    
